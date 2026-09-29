@@ -85,12 +85,7 @@ CI (GitHub Actions) runs typecheck + lint on every push. A daily cron pings Supa
 ## Out of scope for MVP (don't build unless asked)
 Social/follows/feed, Beli-style pairwise ranking, App Store/EAS builds, push notifications, Apple/Google sign-in. Stretch goals only if time allows: a 1–10 score and a public read-only profile.
 
-## Test-driven development (required)
-Write the tests **before** the implementation. For every feature or fix:
-1. Write the failing test(s) that encode the requirement or constraint.
-2. Run them and confirm they fail for the expected reason.
-3. Write the minimum implementation to make them pass.
-4. Refactor with the tests green.
+
 
 Don't write implementation code for anything that has no failing test yet. Don't weaken or delete a test to make it pass. If a test's premise is wrong, say so and ask first.
 
