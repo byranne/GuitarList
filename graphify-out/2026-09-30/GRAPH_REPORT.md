@@ -1,17 +1,17 @@
-# Graph Report - MALguitar  (2026-09-30)
+# Graph Report - MALguitar  (2026-09-29)
 
 ## Corpus Check
-- 43 files · ~36,284 words
+- 48 files · ~37,826 words
 - Verdict: corpus is large enough that graph structure adds value.
 - Unclassified: 5 file(s) not represented in the graph (top: (none) 2, .example 1, .css 1)
 
 ## Summary
-- 256 nodes · 286 edges · 23 communities (17 shown, 6 thin omitted)
-- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS · INFERRED: 1 edges (avg confidence: 0.95)
+- 283 nodes · 378 edges · 23 communities (17 shown, 6 thin omitted)
+- Extraction: 100% EXTRACTED · 0% INFERRED · 0% AMBIGUOUS
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `8b107730`
+- Built from commit: `d3c1f108`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -20,11 +20,11 @@
 - What You Must Do When Invoked
 - package.json
 - dependencies
-- app/_layout.tsx
-- ui/index.ts
+- queries/index.ts
+- sign-in.tsx
 - MALguitar
 - Find Skills
-- devDependencies
+- colors
 - graphify reference: extra exports and benchmark
 - database.types.ts
 - scripts
@@ -40,22 +40,28 @@
 - nativewind-env.d.ts
 
 ## God Nodes (most connected - your core abstractions)
-1. `MALguitar` - 14 edges
-2. `expo` - 13 edges
-3. `What You Must Do When Invoked` - 12 edges
-4. `/graphify` - 10 edges
-5. `scripts` - 8 edges
-6. `graphify reference: extra exports and benchmark` - 8 edges
-7. `react-native` - 7 edges
-8. `Screen()` - 7 edges
-9. `colors` - 7 edges
-10. `Find Skills` - 7 edges
+1. `expo` - 13 edges
+2. `What You Must Do When Invoked` - 12 edges
+3. `MALguitar` - 12 edges
+4. `react-native` - 10 edges
+5. `useSession()` - 10 edges
+6. `/graphify` - 10 edges
+7. `Screen()` - 9 edges
+8. `scripts` - 8 edges
+9. `colors` - 8 edges
+10. `graphify reference: extra exports and benchmark` - 8 edges
 
 ## Surprising Connections (you probably didn't know these)
-- `Stack` --references--> `AuthProvider()`  [INFERRED]
-  CLAUDE.md → src/lib/queries/useSession.tsx
 - `RootStack()` --calls--> `useSession()`  [EXTRACTED]
   app/_layout.tsx → src/lib/queries/useSession.tsx
+- `VerifyEmailScreen()` --calls--> `useSession()`  [EXTRACTED]
+  app/verify-email.tsx → src/lib/queries/useSession.tsx
+- `SignInStep()` --calls--> `useSignIn()`  [EXTRACTED]
+  app/(auth)/sign-in.tsx → src/lib/queries/useAuth.ts
+- `SignUpStep()` --calls--> `useSignUp()`  [EXTRACTED]
+  app/(auth)/sign-in.tsx → src/lib/queries/useAuth.ts
+- `ProfileScreen()` --calls--> `useSignOut()`  [EXTRACTED]
+  app/(tabs)/profile.tsx → src/lib/queries/useAuth.ts
 
 ## Import Cycles
 - None detected.
@@ -71,40 +77,40 @@ Cohesion: 0.08
 Nodes (24): For /graphify add and --watch, For /graphify query, For the commit hook and native CLAUDE.md integration, For --update and --cluster-only, /graphify, Honesty Rules, Interpreter guard for subcommands, Part A - Structural extraction for code files (+16 more)
 
 ### Community 2 - "package.json"
-Cohesion: 0.07
-Nodes (26): config, { getDefaultConfig }, { withNativeWind }, main, name, private, version, babel-preset-expo (+18 more)
+Cohesion: 0.06
+Nodes (30): config, { getDefaultConfig }, { withNativeWind }, devDependencies, babel-preset-expo, prettier-plugin-tailwindcss, tailwindcss, @types/react (+22 more)
 
 ### Community 3 - "dependencies"
 Cohesion: 0.08
 Nodes (25): dependencies, expo, expo-asset, expo-constants, expo-font, expo-linking, expo-router, expo-secure-store (+17 more)
 
-### Community 4 - "app/_layout.tsx"
-Cohesion: 0.13
-Nodes (13): RootStack(), Stack, global, expo-router, expo-status-bar, lucide-react-native, tailwindcss, @tanstack/react-query (+5 more)
+### Community 4 - "queries/index.ts"
+Cohesion: 0.17
+Nodes (17): RootStack(), ProfileScreen(), global, expo-status-bar, @supabase/supabase-js, @tanstack/react-query, queryClient, Credentials (+9 more)
 
-### Community 5 - "ui/index.ts"
-Cohesion: 0.13
-Nodes (9): react, react-native, react-native-safe-area-context, Button(), ButtonProps, Screen(), ScreenProps, TextField (+1 more)
+### Community 5 - "sign-in.tsx"
+Cohesion: 0.08
+Nodes (29): Mode, SignInStep(), SignUpStep(), CodeStep(), VerifyEmailScreen(), @hookform/resolvers, react, react-hook-form (+21 more)
 
 ### Community 6 - "MALguitar"
 Cohesion: 0.14
-Nodes (13): Commands, Conventions, Data model, Data safety (personal-mode caveat), graphify, Hard constraints, Layout, MALguitar (+5 more)
+Nodes (13): Commands, Conventions, Data model, graphify, Hard constraints, How each constraint is tested, Layout, MALguitar (+5 more)
 
 ### Community 7 - "Find Skills"
 Cohesion: 0.14
 Nodes (13): Common Skill Categories, Find Skills, How to Help Users Find Skills, Step 1: Understand What They Need, Step 2: Check the Leaderboard First, Step 3: Search for Skills, Step 4: Verify Quality Before Recommending, Step 5: Present Options to the User (+5 more)
 
-### Community 8 - "devDependencies"
-Cohesion: 0.33
-Nodes (6): devDependencies, babel-preset-expo, prettier-plugin-tailwindcss, tailwindcss, @types/react, typescript
+### Community 8 - "colors"
+Cohesion: 0.26
+Nodes (5): expo-router, lucide-react-native, tailwindcss, colors, ColorToken
 
 ### Community 9 - "graphify reference: extra exports and benchmark"
 Cohesion: 0.22
 Nodes (8): graphify reference: extra exports and benchmark, Step 6b - Wiki (only if --wiki flag), Step 7 - Neo4j export (only if --neo4j or --neo4j-push flag), Step 7a - FalkorDB export (only if --falkordb or --falkordb-push flag), Step 7b - SVG export (only if --svg flag), Step 7c - GraphML export (only if --graphml flag), Step 7d - MCP server (only if --mcp flag), Step 8 - Token reduction benchmark (only if total_words > 5000)
 
 ### Community 10 - "database.types.ts"
-Cohesion: 0.13
-Nodes (15): expo-secure-store, @supabase/supabase-js, Database, Json, PracticeFocus, PublicTables, SongSource, SongStatus (+7 more)
+Cohesion: 0.20
+Nodes (9): Database, Json, PracticeFocus, PublicTables, SongSource, SongStatus, Tables, TablesInsert (+1 more)
 
 ### Community 11 - "scripts"
 Cohesion: 0.25
@@ -139,11 +145,11 @@ Nodes (3): For --cluster-only, For --update (incremental re-extraction), graphif
 _Questions this graph is uniquely positioned to answer:_
 
 - **Why does `dependencies` connect `dependencies` to `package.json`?**
-  _High betweenness centrality (0.097) - this node is a cross-community bridge._
-- **Why does `react-native` connect `ui/index.ts` to `package.json`, `database.types.ts`, `app/_layout.tsx`?**
-  _High betweenness centrality (0.065) - this node is a cross-community bridge._
-- **Why does `AuthProvider()` connect `app/_layout.tsx` to `database.types.ts`?**
-  _High betweenness centrality (0.064) - this node is a cross-community bridge._
+  _High betweenness centrality (0.088) - this node is a cross-community bridge._
+- **Why does `react-native` connect `sign-in.tsx` to `package.json`, `queries/index.ts`?**
+  _High betweenness centrality (0.056) - this node is a cross-community bridge._
+- **Why does `scripts` connect `scripts` to `package.json`?**
+  _High betweenness centrality (0.027) - this node is a cross-community bridge._
 - **What connects `name`, `slug`, `version` to the rest of the system?**
   _163 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `expo` be split into smaller, more focused modules?**
@@ -151,4 +157,4 @@ _Questions this graph is uniquely positioned to answer:_
 - **Should `What You Must Do When Invoked` be split into smaller, more focused modules?**
   _Cohesion score 0.08 - nodes in this community are weakly interconnected._
 - **Should `package.json` be split into smaller, more focused modules?**
-  _Cohesion score 0.07407407407407407 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06451612903225806 - nodes in this community are weakly interconnected._

@@ -4,17 +4,20 @@ project_id = "malguitar"
 major_version = 17
 
 [auth]
-site_url = "http://localhost:8081"
-minimum_password_length = 8
+site_url = "http://localhost:5173"
+# Invite-only: accounts are created from the dashboard (Auth → Add/Invite user).
+# The hosted project needs the same: turn off "Allow new users to sign up".
+enable_signup = false
+enable_anonymous_sign_ins = false
 
 [auth.email]
+# This is the email *provider* switch; leave it on. [auth] enable_signup blocks new users.
 enable_signup = true
-# Users get in right away; email verification is optional and done later from Profile.
-enable_confirmations = false
 otp_length = 6
 otp_expiry = 3600
 
-# signInWithOtp for an existing user sends this template; it must show the code.
+# signInWithOtp sends this template; it must show the 6-digit code, not a link
+# (on iOS a link opens Safari, which doesn't share storage with the home-screen app).
 [auth.email.template.magic_link]
-subject = "Your MALguitar verification code"
+subject = "Your MALguitar sign-in code"
 content_path = "./supabase/templates/verify-code.html"

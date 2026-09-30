@@ -1,5 +1,5 @@
-// Placeholder dark palette for the scaffold. The final look (accent, type scale)
-// is decided in the Week 1 design-tokens task; change values here, not in components.
+// Placeholder dark palette. Change values here and in tokens.css (Tailwind reads
+// the CSS; this file serves non-CSS consumers like the PWA manifest), not in components.
 export const colors = {
   background: '#0B0B0F',
   surface: '#16161D',

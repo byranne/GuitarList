@@ -1,51 +1,36 @@
-import { ActivityIndicator, Pressable, Text } from 'react-native';
+import { LoaderCircle } from 'lucide-react';
+import type { ComponentProps } from 'react';
 
-import { colors } from '@/theme';
-
-type ButtonProps = {
+type ButtonProps = Omit<ComponentProps<'button'>, 'children' | 'className'> & {
   label: string;
-  onPress: () => void;
   variant?: 'primary' | 'ghost';
   loading?: boolean;
-  disabled?: boolean;
-  testID?: string;
 };
 
 export function Button({
   label,
-  onPress,
   variant = 'primary',
   loading = false,
   disabled = false,
-  testID,
+  type = 'button',
+  ...buttonProps
 }: ButtonProps) {
   const isDisabled = disabled || loading;
   const isPrimary = variant === 'primary';
 
   return (
-    <Pressable
-      accessibilityRole="button"
-      accessibilityState={{ disabled: isDisabled, busy: loading }}
+    <button
+      type={type}
       disabled={isDisabled}
-      onPress={onPress}
-      testID={testID}
+      aria-busy={loading}
       className={[
-        'h-12 flex-row items-center justify-center rounded-full px-6 active:opacity-80',
-        isPrimary ? 'bg-accent' : 'bg-transparent',
+        'flex h-12 w-full items-center justify-center rounded-full px-6 text-base transition-opacity active:opacity-80',
+        isPrimary ? 'bg-accent font-semibold text-on-accent' : 'bg-transparent font-medium text-muted',
         isDisabled ? 'opacity-50' : '',
       ].join(' ')}
+      {...buttonProps}
     >
-      {loading ? (
-        <ActivityIndicator color={isPrimary ? colors['on-accent'] : colors.text} />
-      ) : (
-        <Text
-          className={
-            isPrimary ? 'text-base font-semibold text-on-accent' : 'text-base font-medium text-muted'
-          }
-        >
-          {label}
-        </Text>
-      )}
-    </Pressable>
+      {loading ? <LoaderCircle aria-label="Loading" className="size-5 animate-spin" /> : label}
+    </button>
   );
 }

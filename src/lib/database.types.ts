@@ -1,4 +1,4 @@
-// Hand-written to match supabase/migrations/ (0001_init, 0002_email_verification).
+// Hand-written to match supabase/migrations/ (0001_init … 0004_add_musicbrainz_song).
 // Once a project is linked, regenerate with: supabase gen types typescript --linked > src/lib/database.types.ts
 
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
@@ -16,7 +16,6 @@ export type Database = {
           username: string | null;
           display_name: string | null;
           avatar_url: string | null;
-          email_verified_at: string | null;
           created_at: string;
         };
         Insert: {
@@ -24,7 +23,6 @@ export type Database = {
           username?: string | null;
           display_name?: string | null;
           avatar_url?: string | null;
-          email_verified_at?: string | null;
           created_at?: string;
         };
         Update: {
@@ -32,7 +30,6 @@ export type Database = {
           username?: string | null;
           display_name?: string | null;
           avatar_url?: string | null;
-          email_verified_at?: string | null;
           created_at?: string;
         };
         Relationships: [];
@@ -185,7 +182,17 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
-      mark_email_verified: { Args: Record<PropertyKey, never>; Returns: string };
+      add_musicbrainz_song: {
+        Args: {
+          p_mbid: string;
+          p_title: string;
+          p_artist: string;
+          p_album?: string | null;
+          p_cover_url?: string | null;
+          p_duration_ms?: number | null;
+        };
+        Returns: string;
+      };
     };
     Enums: {
       song_source: SongSource;
