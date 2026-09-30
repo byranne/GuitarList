@@ -7,6 +7,8 @@ export const colors = {
   text: '#F5F5F7',
   muted: '#8E8E9A',
   accent: '#FF5A36',
+  'on-accent': '#FFFFFF',
+  danger: '#FF4D5E',
 } as const;
 
 export type ColorToken = keyof typeof colors;

@@ -42,6 +42,10 @@ dist/
 build/
 *.log
 
+# Supabase CLI local state (linked project ref, pooler URL, versions)
+supabase/.temp/
+supabase/.branches/
+
 # Graphify cache (graph outputs stay tracked)
 graphify-out/cache/
 # Expo
