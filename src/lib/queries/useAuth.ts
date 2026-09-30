@@ -2,25 +2,13 @@ import { useMutation } from '@tanstack/react-query';
 
 import { supabase } from '../supabase';
 
-// Invite-only: accounts are created in the Supabase dashboard, so the app never
-// creates users. The magic_link email template renders a 6-digit code.
-export function useSendCode() {
-  return useMutation({
-    mutationFn: async (email: string) => {
-      const { error } = await supabase.auth.signInWithOtp({
-        email,
-        options: { shouldCreateUser: false },
-      });
-      if (error) throw error;
-    },
-  });
-}
-
+// Invite-only: accounts (with a password) are created in the Supabase
+// dashboard and sign-ups are disabled, so the app never creates users.
 // On success the auth listener sets the session and the router leaves /sign-in.
-export function useVerifyCode() {
+export function useSignIn() {
   return useMutation({
-    mutationFn: async ({ email, token }: { email: string; token: string }) => {
-      const { error } = await supabase.auth.verifyOtp({ email, token, type: 'email' });
+    mutationFn: async ({ email, password }: { email: string; password: string }) => {
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
     },
   });

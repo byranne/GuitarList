@@ -15,9 +15,3 @@ enable_anonymous_sign_ins = false
 enable_signup = true
 otp_length = 6
 otp_expiry = 3600
-
-# signInWithOtp sends this template; it must show the 6-digit code, not a link
-# (on iOS a link opens Safari, which doesn't share storage with the home-screen app).
-[auth.email.template.magic_link]
-subject = "Your MALguitar sign-in code"
-content_path = "./supabase/templates/verify-code.html"

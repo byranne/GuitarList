@@ -17,7 +17,7 @@ export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     autoRefreshToken: true,
     persistSession: true,
-    // Sign-in uses a typed 6-digit code, never a link back into the app.
+    // Sign-in is email + password, never a link back into the app.
     detectSessionInUrl: false,
   },
 });

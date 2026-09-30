@@ -25,8 +25,8 @@ Plans:
 - **Data:** TanStack Query, with optimistic updates for library/status/progress mutations.
 - **Forms:** `react-hook-form` (`register`) + `zod`.
 - **Backend:** Supabase: Postgres, Auth, RLS. There is no custom server.
-- **Auth:** invite-only email + 6-digit code (`signInWithOtp({ shouldCreateUser: false })` then `verifyOtp`).
-  - Use a code, not a magic link: on iOS a link opens Safari, which doesn't share storage with the home-screen app.
+- **Auth:** invite-only email + password (`signInWithPassword`).
+  - No magic links or emailed codes: on iOS a link opens Safari, which doesn't share storage with the home-screen app, and hosted email is rate-limited.
   - Accounts are created from the Supabase dashboard, and sign-ups are disabled.
 - **Song data:** MusicBrainz + Cover Art Archive, called **from the browser** (both send CORS `*`). New catalog songs go through the `add_musicbrainz_song` RPC.
 - **Tests:** Vitest for pure logic. pgTAP for schema/RLS.
@@ -50,7 +50,6 @@ public/                    icons, favicon
 supabase/
   migrations/*.sql         0001_init (squashed baseline: tables, RLS, triggers, add_musicbrainz_song)
   tests/*.test.sql         pgTAP
-  templates/verify-code.html  magic_link template that renders {{ .Token }}
 ```
 
 ## Conventions
@@ -102,7 +101,7 @@ supabase/
 - `supabase start` / `supabase migration up --local`: local stack + apply new migrations. `supabase db reset` wipes local data.
 - `supabase test db`: pgTAP
 - `supabase db push`: apply migrations to the hosted project (confirm first)
-- Local sign-in: create a user in local Studio (http://127.0.0.1:54323), then read the code in Mailpit (http://127.0.0.1:54324).
+- Local sign-in: create a user with a password (Auto Confirm) in local Studio (http://127.0.0.1:54323).
 
 ## Testing
 - Test-first is **not** required.
@@ -115,7 +114,7 @@ supabase/
 - Schema/RLS changes: `supabase migration up --local` + `supabase test db`.
 - UI changes: check in a desktop browser at phone width, and on the iPhone home-screen PWA when layout, safe areas, or storage are involved.
 - Manual smoke flow:
-  1. Sign in with a code inside the PWA.
+  1. Sign in with email + password inside the PWA.
   2. Search "Wonderwall" and add it as Learning.
   3. Set progress and links.
   4. Log a session.
