@@ -22,6 +22,11 @@ create table public.profiles (
   created_at timestamptz not null default now()
 );
 
+-- Owners may edit only these columns. A table-level UPDATE grant would override
+-- a column-level revoke, so re-grant column by column.
+revoke update on public.profiles from anon, authenticated;
+grant update (username, display_name, avatar_url) on public.profiles to authenticated;
+
 create function public.handle_new_user()
 returns trigger
 language plpgsql
@@ -154,7 +159,7 @@ create policy "users update own profile"
   with check (id = (select auth.uid()));
 
 -- songs: the MusicBrainz catalog is shared; custom songs are private to their creator.
--- MusicBrainz rows are written by the search-songs edge function (service role bypasses RLS).
+-- Clients can't insert MusicBrainz rows directly; they go through add_musicbrainz_song() below.
 create policy "users read catalog and own custom songs"
   on public.songs for select
   to authenticated
@@ -238,3 +243,60 @@ create policy "users delete own sessions"
   on public.practice_sessions for delete
   to authenticated
   using (user_id = (select auth.uid()));
+
+-- ---------------------------------------------------------------------------
+-- add_musicbrainz_song: the only client path into the shared catalog
+-- ---------------------------------------------------------------------------
+-- The app calls MusicBrainz from the browser. This validates input, upserts by
+-- mbid, never creates custom rows, and only fills metadata that is missing, so
+-- one client can't rewrite another's rows. If the app grows, a search-songs
+-- edge function can take this over.
+create function public.add_musicbrainz_song(
+  p_mbid uuid,
+  p_title text,
+  p_artist text,
+  p_album text default null,
+  p_cover_url text default null,
+  p_duration_ms integer default null
+)
+returns uuid
+language plpgsql
+security definer
+set search_path = ''
+as $$
+declare
+  song_id uuid;
+begin
+  if auth.uid() is null then
+    raise exception 'not authenticated' using errcode = '42501';
+  end if;
+
+  if p_mbid is null then
+    raise exception 'mbid is required' using errcode = '22023';
+  end if;
+
+  if char_length(p_album) > 300 then
+    raise exception 'album is too long' using errcode = '22023';
+  end if;
+
+  -- Only Cover Art Archive images, so the catalog can't point friends at arbitrary URLs.
+  if p_cover_url is not null and p_cover_url not like 'https://coverartarchive.org/%' then
+    raise exception 'cover_url must be a Cover Art Archive URL' using errcode = '22023';
+  end if;
+
+  insert into public.songs as s (mbid, title, artist, album, cover_url, duration_ms, source)
+  values (p_mbid, p_title, p_artist, p_album, p_cover_url, p_duration_ms, 'musicbrainz')
+  on conflict (mbid) do update
+    set album = coalesce(s.album, excluded.album),
+        cover_url = coalesce(s.cover_url, excluded.cover_url),
+        duration_ms = coalesce(s.duration_ms, excluded.duration_ms)
+  returning s.id into song_id;
+
+  return song_id;
+end;
+$$;
+
+revoke execute on function public.add_musicbrainz_song(uuid, text, text, text, text, integer)
+  from public, anon;
+grant execute on function public.add_musicbrainz_song(uuid, text, text, text, text, integer)
+  to authenticated;

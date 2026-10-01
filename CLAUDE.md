@@ -1,115 +1,136 @@
 # MALguitar
 
-"MyAnimeList / Beli for guitarists." Users keep a personal library of songs (want to learn / learning / learned / shelved) and log practice sessions against each song. It's a solo 4–6 week MVP that ships to real users as a web PWA. The same codebase has to go to the App Store later without a rewrite.
+"MyAnimeList / Beli for guitarists." A **personal tool first**: I keep a library of songs (want to learn / learning / learned / shelved) and log practice sessions against each one. I use it daily as a home-screen PWA on my iPhone and in a laptop browser. A small group of friends may join later (invite-only), and maybe more people after that.
 
-Full architecture + sprint plan: `~/.claude/plans/i-am-building-a-agile-hopper.md`
+**Guiding rule: build for one user, keep the multi-user seams.**
+- Every row keeps a `user_id` with owner-only RLS.
+- All data access goes through `src/lib/queries/`.
+- Each external service sits behind one module.
+- Never hard-code a user id, and never loosen RLS "because it's just me."
+
+Plans:
+- Stack decisions + staged roadmap: `~/.claude/plans/can-you-look-at-wild-feather.md`
+- Feature slices: `~/.claude/plans/i-am-building-a-agile-hopper.md`
 
 ## Hard constraints
-- **$0 budget.** Free tiers only. Don't add paid services or anything that needs the Apple $99 fee (no EAS/App Store builds yet).
-- **Polish matters.** Aim for a Beli / Spotify / Instagram level: dark-first, one accent color, smooth sheets and animations, skeleton loaders, empty states.
-- **Cross-platform.** Code must run on web *and* iOS/Android via Expo Go. Don't use web-only APIs or DOM code in shared components. Guard with `Platform.OS` when needed.
+- **$0 budget.** Free tiers only. No paid services, no Apple $99 fee.
+- **Pleasant to use daily on iPhone.** Dark-first, one accent color, smooth sheets, empty states. It must feel right as an installed PWA: safe areas, no zoom on input focus, 44px tap targets.
 - **TypeScript everywhere**, strict mode. No `any` without a comment explaining why.
+- **Keep it small.** Pick the simplest thing that works, unless it would force a data migration or a rewrite when friends join.
 
 ## Stack
-- **App:** Expo (latest SDK) + React Native + TypeScript + Expo Router
-- **UI:** NativeWind (Tailwind), `expo-image`, `react-native-reanimated`, `@gorhom/bottom-sheet`, `lucide-react-native`
-- **Data:** TanStack Query (use optimistic updates for library/status/progress mutations)
-- **Forms:** `react-hook-form` + `zod` (share schemas between forms and data mapping)
-- **Backend:** Supabase: Postgres, Auth (email OTP / magic link), RLS, Edge Functions, Storage. There is no custom server.
-- **Song data:** MusicBrainz + Cover Art Archive, **only** through the `search-songs` edge function
-- **Hosting:** `npx expo export -p web` → Vercel / Cloudflare Pages (static SPA + PWA manifest)
-- **Errors:** Sentry free tier (`@sentry/react-native`)
+- **App:** Vite + React 19 + TypeScript, React Router (`createBrowserRouter`), a static SPA.
+- **PWA:** `vite-plugin-pwa` (manifest, service worker, auto-update). iOS meta tags are in `index.html`.
+- **UI:** Tailwind CSS v4 (tokens in `src/theme/tokens.css`), `lucide-react`, `vaul` for bottom sheets.
+- **Data:** TanStack Query, with optimistic updates for library/status/progress mutations.
+- **Forms:** `react-hook-form` (`register`) + `zod`.
+- **Backend:** Supabase: Postgres, Auth, RLS. There is no custom server.
+- **Auth:** invite-only email + password (`signInWithPassword`).
+  - No magic links or emailed codes: on iOS a link opens Safari, which doesn't share storage with the home-screen app, and hosted email is rate-limited.
+  - Accounts are created from the Supabase dashboard, and sign-ups are disabled.
+- **Song data:** MusicBrainz + Cover Art Archive, called **from the browser** (both send CORS `*`). New catalog songs go through the `add_musicbrainz_song` RPC.
+- **Tests:** Vitest for pure logic. pgTAP for schema/RLS.
+- **Hosting:** `npm run build` → Cloudflare Pages (free, SPA fallback is automatic).
 
 ## Layout
 ```
-app/                      Expo Router screens
-  (auth)/sign-in.tsx
-  (tabs)/index.tsx        Library
-  (tabs)/search.tsx       MusicBrainz search → add-to-library sheet
-  (tabs)/practice.tsx     recent sessions, streak, quick log
-  (tabs)/profile.tsx      stats
-  song/[id].tsx           song detail
+index.html                 iOS PWA meta, viewport-fit=cover
+vite.config.ts             React, Tailwind, PWA manifest, @ alias, Vitest
 src/
-  lib/supabase.ts         Supabase client + secure session storage
-  lib/queries/            TanStack Query hooks (useLibrary, useSongSearch, useLogSession…)
-  components/ui/          design-system primitives (Button, Card, Sheet, Chip, CoverArt, ProgressBar)
-  theme/                  color tokens, typography, spacing
+  main.tsx                 QueryClientProvider → AuthProvider → RouterProvider
+  router.tsx               route table
+  routes/                  guards (RequireSession/GuestOnly), TabsLayout, pages
+  lib/supabase.ts          Supabase client (localStorage session)
+  lib/database.types.ts    hand-written DB types (regenerate once linked)
+  lib/queries/             TanStack Query hooks (useSession, useSendCode, useVerifyCode, useSignOut…)
+  lib/schemas/             zod schemas
+  components/ui/           primitives (Button, Screen, TextField, then Card, Sheet, Chip, CoverArt, ProgressBar)
+  theme/                   tokens.css (Tailwind @theme) + colors.ts (for non-CSS consumers); keep them in sync
+public/                    icons, favicon
 supabase/
-  migrations/*.sql        schema + RLS (numbered: 0001_init.sql, 0002_…)
-  functions/search-songs/ MusicBrainz proxy + cache
+  migrations/*.sql         0001_init (squashed baseline: tables, RLS, triggers, add_musicbrainz_song)
+  tests/*.test.sql         pgTAP
 ```
 
 ## Conventions
-- Screens don't call Supabase directly. All reads and writes go through hooks in `src/lib/queries/`.
-- Colors, spacing, and type come from `src/theme/` tokens. No hard-coded hex values in components.
-- Build screens from `src/components/ui/` primitives. Extend a primitive rather than one-off styling it.
-- Pure logic (status transitions, streak calculation, MusicBrainz response mapping) lives in plain TS modules with Jest unit tests.
-- Schema changes are **always** a new migration file. Never edit an applied migration.
+- Pages don't call Supabase directly. All reads and writes go through hooks in `src/lib/queries/`.
+- Colors come from theme tokens (`bg-accent`, `text-muted`…). No hex values in components.
+- Build pages from `src/components/ui/` primitives. Extend a primitive rather than styling one page ad hoc.
+- Pure logic (status transitions, streaks, stats, MusicBrainz mapping) goes in plain TS modules with a `*.test.ts` next to it.
+- Data is small per user. Load a user's whole library and sessions once, then filter, sort, and compute stats on the client.
+- Schema changes are **always** a new migration file. Never edit a migration once it has been pushed to the hosted project.
+- Env vars are `VITE_*`, and everything with that prefix ships in the bundle.
 
 ## Data model
-- `profiles`: `id` → `auth.users`, unique `username`, `display_name`, `avatar_url`
-- `songs`: MusicBrainz catalog cache plus users' private custom songs. `source` is `musicbrainz` | `custom`. MusicBrainz rows have a unique `mbid` and no `created_by`. Custom rows have `created_by` and no `mbid`, and they cascade-delete with the user.
-- `user_songs`: one row per user per song (`unique(user_id, song_id)`). Columns: `status` enum (`want_to_learn`, `learning`, `learned`, `shelved`), `progress` 0–100, `difficulty` 1–5, `tuning`, `capo`, `notes`, `tab_url`, `video_url`, `started_at`, `learned_at`, `updated_at`.
-- `practice_sessions`: `user_song_id`, `practiced_at`, `duration_min`, `focus` (riff/solo/rhythm/full song), `notes`, `progress_after`.
-- `learned_at` is set automatically when status becomes `learned`.
-- Design tables so public profiles, follows, and ratings can be added later **without migrating existing data**.
+- `profiles`: `id` → `auth.users`, `username`, `display_name`, `avatar_url`. Created by a signup trigger and public-read. Unused by the UI until the friends stage.
+- `songs`: a **shared catalog**, so the same song is the same row for everyone.
+  - `source` is `musicbrainz` | `custom`.
+  - MusicBrainz rows: unique `mbid`, no `created_by`. Written only by `add_musicbrainz_song()`. The RPC validates input, only accepts coverartarchive.org cover URLs, and only fills missing metadata.
+  - Custom rows: `created_by`, private to their creator.
+- `user_songs`: one row per user per song (`unique(user_id, song_id)`).
+  - `status` enum: `want_to_learn`, `learning`, `learned`, `shelved`.
+  - Other columns: `progress` 0–100, `difficulty` 1–5, `tuning`, `capo`, `notes`, `tab_url`, `video_url`, `started_at`, `learned_at`, `updated_at`.
+- `practice_sessions`: `user_song_id`, `practiced_at`, `duration_min`, `focus` (riff/solo/rhythm/full_song), `notes`, `progress_after`.
+- A trigger sets `learned_at` when status becomes `learned`, and `started_at` when status becomes `learning` or `learned`.
+- Social features later (follows, ratings, friend libraries) are **additive** tables and policies, with no data migration.
 
-## Security (RLS is the security boundary)
-- Every table has RLS enabled. No exceptions.
+## Security (RLS is the boundary; the anon key is public)
+- Every table has RLS enabled.
 - `user_songs`, `practice_sessions`: owner-only CRUD (`user_id = auth.uid()`).
-- `songs`: `musicbrainz` rows are readable by every authenticated user and written only by the edge function (service role). `custom` rows are readable, insertable, updatable, and deletable only by their creator (`created_by = auth.uid()`).
-- `user_songs` can only reference songs the user can see, so nobody can add another user's custom song.
+- `songs`:
+  - `musicbrainz` rows are readable by every authenticated user. Clients can't insert them directly, only through the RPC.
+  - `custom` rows are CRUD for their creator only.
+  - `user_songs` can only reference songs the user can see.
 - `profiles`: public read, owner write.
-- The service-role key is used only inside edge functions. It never goes in the app bundle or in `EXPO_PUBLIC_*` env vars.
+- Sign-ups and anonymous sign-ins are off: `[auth] enable_signup = false` locally, and the same toggles in the hosted dashboard.
+  - Don't set `[auth.email] enable_signup = false`: that disables email login entirely.
+- The service-role/secret key never goes in the app or in `VITE_*`.
 
 ## MusicBrainz rules
-- Call MusicBrainz only from `supabase/functions/search-songs`, never from the client.
-- Always send a descriptive `User-Agent` (app name/version + contact). Stay at or under **1 req/s**.
-- Check the `songs` cache first. Upsert results by `mbid`. An identical second search must not hit MusicBrainz.
-- Cover art comes from Cover Art Archive. Handle missing art with a placeholder in `CoverArt`.
+- Call it only through `src/lib/musicbrainz.ts`. That module is the swap point for a `search-songs` edge function if the app grows.
+- Debounce search input (≥400 ms) and never fire requests in a loop. The limit is 1 req/s per IP.
+- Cover art: Cover Art Archive `front-250` URLs, with a placeholder when missing.
 - If MusicBrainz has no match, fall back to the custom-song form.
 
 ## Commands
-(Being scaffolded in Week 1. Update this list once they exist.)
-- `npx expo start`: dev server (web + Expo Go)
-- `npx tsc --noEmit`: typecheck
-- `npx eslint .`: lint
-- `npx jest`: unit tests
-- `npx expo export -p web`: production web build
-- `supabase start` / `supabase db reset`: local DB + apply migrations
-- `supabase functions serve`: run edge functions locally
-- `supabase test db`: pgTAP schema + RLS tests
-- `deno test supabase/functions`: edge function tests
+- `npm run dev`: dev server (http://localhost:5173)
+- `npm run typecheck`: `tsc --noEmit`
+- `npm test`: Vitest (`vitest run`)
+- `npm run build`: typecheck + production build to `dist/` (includes the service worker)
+- `npm run preview`: serve the production build
+- `supabase start` / `supabase migration up --local`: local stack + apply new migrations. `supabase db reset` wipes local data.
+- `supabase test db`: pgTAP
+- `supabase db push`: apply migrations to the hosted project (confirm first)
+- Local sign-in: create a user with a password (Auto Confirm) in local Studio (http://127.0.0.1:54323).
 
-CI (GitHub Actions) runs typecheck + lint on every push. A daily cron pings Supabase so the free project doesn't pause.
-
-## Out of scope for MVP (don't build unless asked)
-Social/follows/feed, Beli-style pairwise ranking, App Store/EAS builds, push notifications, Apple/Google sign-in. Stretch goals only if time allows: a 1–10 score and a public read-only profile.
-
-
-
-Don't write implementation code for anything that has no failing test yet. Don't weaken or delete a test to make it pass. If a test's premise is wrong, say so and ask first.
-
-### How each constraint is tested
-| Constraint | Test | Location / tool |
-|---|---|---|
-| RLS: owner-only `user_songs` / `practice_sessions` | User B can't select/insert/update/delete user A's rows | `supabase/tests/*.sql`, pgTAP via `supabase test db` |
-| RLS: `songs` rules | Client can insert only `source='custom'` with `created_by = auth.uid()`; `musicbrainz` rows are service-role only; user B can't see or library-add user A's custom song | pgTAP |
-| RLS: `profiles` | Anyone can read; only the owner can write | pgTAP |
-| Schema integrity | `unique(user_id, song_id)`; `progress` 0–100; `difficulty` 1–5; `status` enum; `mbid` unique | pgTAP |
-| `learned_at` auto-set | Changing status to `learned` sets `learned_at` | pgTAP (trigger) + Jest (status transition logic) |
-| MusicBrainz proxy | Sends a `User-Agent`; ≤1 req/s; an identical second search is served from the cache with no fetch; response mapping; upsert by `mbid` | `supabase/functions/search-songs/*.test.ts`, `deno test`, with `fetch` mocked |
-| No service-role key in the client | The web export bundle has no service-role key and no `EXPO_PUBLIC_*SERVICE*` vars | CI script over the `expo export -p web` output |
-| Pure logic | Status transitions, streak calculation, zod schemas, MusicBrainz mapping | Jest, `*.test.ts` next to the source |
-| Data hooks | Optimistic update applied, then rolled back on error; cache invalidation | Jest + `@testing-library/react-native`, with a mocked Supabase client |
-| Cross-platform | Component tests run on iOS, Android, and web | `jest-expo` universal preset |
-| Design tokens | No hard-coded hex values in `app/` or `src/components/` | ESLint rule / CI grep |
+## Testing
+- Test-first is **not** required.
+- Write Vitest tests for pure logic.
+- Update pgTAP with every migration.
+- Don't weaken or delete a test to make it pass. If a test's premise is wrong, say so and ask first.
 
 ## Verifying changes
-- Run `tsc --noEmit`, lint, Jest, `supabase test db`, and `deno test` for edge functions before calling work done.
-- RLS changes: confirm user B can't read or write user A's `user_songs` / `practice_sessions`.
-- UI changes: check on web **and** Expo Go.
-- Manual smoke flow: sign up → search "Wonderwall" → add as Learning → set progress + links → log a session → mark Learned → stats update.
+- Always: `npm run build` (typecheck + build) and `npm test`.
+- Schema/RLS changes: `supabase migration up --local` + `supabase test db`.
+- UI changes: check in a desktop browser at phone width, and on the iPhone home-screen PWA when layout, safe areas, or storage are involved.
+- Manual smoke flow:
+  1. Sign in with email + password inside the PWA.
+  2. Search "Wonderwall" and add it as Learning.
+  3. Set progress and links.
+  4. Log a session.
+  5. Mark it Learned.
+  6. Check that the stats update.
+  7. Force-quit, reopen, and confirm you're still signed in with the data intact.
+
+## Out of scope (don't build unless asked)
+- Open sign-ups
+- Social/follows/feed
+- Beli-style ranking
+- App Store/Capacitor builds
+- Push notifications
+- Sentry/analytics
+
+Friends-stage items (custom SMTP, invites, Sentry) are listed in the plan.
 
 ## graphify
 

@@ -1,0 +1,19 @@
+@import 'tailwindcss';
+@import './theme/tokens.css';
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  min-height: 100dvh;
+  background-color: var(--color-background);
+  color: var(--color-text);
+}
+
+body {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+}

@@ -2,7 +2,7 @@
 begin;
 create extension if not exists pgtap with schema extensions;
 
-select plan(26);
+select plan(22);
 
 -- ---------------------------------------------------------------------------
 -- Fixtures (as superuser, bypassing RLS)
@@ -15,7 +15,7 @@ select is(
   (select count(*)::int from public.profiles
    where id in ('00000000-0000-0000-0000-00000000000a', '00000000-0000-0000-0000-00000000000b')),
   2,
-  'signup trigger creates a profile per user'
+  'signup trigger creates a profile per user (anonymous users included)'
 );
 
 insert into public.songs (id, mbid, title, artist, source) values
@@ -144,25 +144,6 @@ select is(
   (select display_name from public.profiles where id = '00000000-0000-0000-0000-00000000000a'),
   null, 'B cannot update A''s profile'
 );
-
--- Email verification: only mark_email_verified(), from a code-verified session, can set it.
-set local role authenticated;
-select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-00000000000b","role":"authenticated","amr":[{"method":"password","timestamp":0}]}', true);
-select throws_ok(
-  $$ update public.profiles set email_verified_at = now() where id = '00000000-0000-0000-0000-00000000000b' $$,
-  '42501', null, 'owner cannot set email_verified_at directly'
-);
-select lives_ok(
-  $$ update public.profiles set display_name = 'B' where id = '00000000-0000-0000-0000-00000000000b' $$,
-  'owner can still update editable profile columns'
-);
-select throws_ok(
-  $$ select public.mark_email_verified() $$,
-  '42501', null, 'a password session cannot mark itself verified'
-);
-select set_config('request.jwt.claims', '{"sub":"00000000-0000-0000-0000-00000000000b","role":"authenticated","amr":[{"method":"otp","timestamp":0}]}', true);
-select isnt(public.mark_email_verified(), null, 'a code-verified session marks the email verified');
-reset role;
 
 -- Account deletion cascades custom songs.
 delete from auth.users where id = '00000000-0000-0000-0000-00000000000a';

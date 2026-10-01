@@ -1,40 +1,33 @@
-import { forwardRef, useState } from 'react';
-import { Text, TextInput, View, type TextInputProps } from 'react-native';
+import { useId, type ComponentProps } from 'react';
 
-import { colors } from '@/theme';
-
-type TextFieldProps = Omit<TextInputProps, 'placeholderTextColor' | 'className'> & {
+type TextFieldProps = Omit<ComponentProps<'input'>, 'className'> & {
   label?: string;
   error?: string;
 };
 
-export const TextField = forwardRef<TextInput, TextFieldProps>(function TextField(
-  { label, error, onFocus, onBlur, ...inputProps },
-  ref,
-) {
-  const [focused, setFocused] = useState(false);
+// Works with react-hook-form's register() (React 19 passes ref as a prop).
+// Inputs stay at text-base (16px) so iOS Safari doesn't zoom on focus.
+export function TextField({ label, error, id, ...inputProps }: TextFieldProps) {
+  const autoId = useId();
+  const inputId = id ?? autoId;
 
   return (
-    <View className="gap-2">
-      {label ? <Text className="text-sm font-medium text-muted">{label}</Text> : null}
-      <TextInput
-        ref={ref}
-        placeholderTextColor={colors.muted}
-        onFocus={(e) => {
-          setFocused(true);
-          onFocus?.(e);
-        }}
-        onBlur={(e) => {
-          setFocused(false);
-          onBlur?.(e);
-        }}
+    <div className="flex flex-col gap-2">
+      {label ? (
+        <label htmlFor={inputId} className="text-sm font-medium text-muted">
+          {label}
+        </label>
+      ) : null}
+      <input
+        id={inputId}
+        aria-invalid={!!error}
         className={[
-          'h-12 rounded-xl border bg-surface px-4 text-base text-text',
-          error ? 'border-danger' : focused ? 'border-accent' : 'border-border',
+          'h-12 rounded-xl border bg-surface px-4 text-base text-text outline-none placeholder:text-muted',
+          error ? 'border-danger' : 'border-border focus:border-accent',
         ].join(' ')}
         {...inputProps}
       />
-      {error ? <Text className="text-sm text-danger">{error}</Text> : null}
-    </View>
+      {error ? <p className="text-sm text-danger">{error}</p> : null}
+    </div>
   );
-});
+}
