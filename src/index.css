@@ -2,7 +2,7 @@
 @import './theme/tokens.css';
 
 :root {
-  color-scheme: dark;
+  color-scheme: light dark;
 }
 
 html,

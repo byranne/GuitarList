@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3cc4be"/>
+      <stop offset="1" stop-color="#167f7b"/>
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#bg)"/>
+  <g id="art">
+    <!-- pole + legs -->
+    <g fill="none" stroke="#d3f0ee" stroke-width="26" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M256 300V372"/>
+      <path d="M256 372L196 420M256 372L316 420"/>
+    </g>
+    <!-- desk + lip -->
+    <rect x="132" y="122" width="248" height="176" rx="40" fill="#ffffff"/>
+    <rect x="112" y="278" width="288" height="38" rx="19" fill="#d3f0ee"/>
+    <!-- face -->
+    <g fill="#08302e">
+      <circle cx="214" cy="202" r="14"/>
+      <circle cx="298" cy="202" r="14"/>
+    </g>
+    <path d="M238 226Q256 244 274 226" fill="none" stroke="#08302e" stroke-width="9" stroke-linecap="round"/>
+    <g fill="#ff8a7a" opacity=".45">
+      <ellipse cx="184" cy="230" rx="16" ry="10"/>
+      <ellipse cx="328" cy="230" rx="16" ry="10"/>
+    </g>
+    <!-- floating note -->
+    <g transform="rotate(10 410 90)">
+      <ellipse cx="398" cy="112" rx="19" ry="14.5" transform="rotate(-20 398 112)" fill="#ffffff"/>
+      <path d="M410 108V54q6 20 26 28" fill="none" stroke="#ffffff" stroke-width="11" stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+  </g>
+</svg>

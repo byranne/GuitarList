@@ -23,12 +23,14 @@ export function TabsLayout() {
                 end={to === '/'}
                 className={({ isActive }) =>
                   [
-                    'flex h-full flex-col items-center justify-center gap-1 text-xs font-medium',
-                    isActive ? 'text-accent' : 'text-muted',
+                    'group flex h-full flex-col items-center justify-center gap-0.5 text-xs font-medium',
+                    isActive ? 'text-on-brand-soft' : 'text-muted',
                   ].join(' ')
                 }
               >
-                <Icon className="size-6" aria-hidden />
+                <span className="rounded-full px-4 py-1 group-aria-[current=page]:bg-brand-soft">
+                  <Icon className="size-6" aria-hidden />
+                </span>
                 {label}
               </NavLink>
             </li>

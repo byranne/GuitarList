@@ -23,7 +23,7 @@ export function TextField({ label, error, id, ...inputProps }: TextFieldProps) {
         aria-invalid={!!error}
         className={[
           'h-12 rounded-xl border bg-surface px-4 text-base text-text outline-none placeholder:text-muted',
-          error ? 'border-danger' : 'border-border focus:border-accent',
+          error ? 'border-danger' : 'border-border focus:border-brand',
         ].join(' ')}
         {...inputProps}
       />

@@ -1,12 +1,48 @@
-/* Design tokens as Tailwind theme variables (bg-accent, text-muted, …).
-   Keep in sync with colors.ts. */
+/* Design tokens as Tailwind theme variables (bg-brand, text-muted, …).
+   Light values live in @theme; dark values override them when the system is in
+   dark mode. Keep in sync with colors.ts (colors.test.ts checks this). */
 @theme {
-  --color-background: #0b0b0f;
-  --color-surface: #16161d;
-  --color-border: #26262f;
-  --color-text: #f5f5f7;
-  --color-muted: #8e8e9a;
-  --color-accent: #ff5a36;
-  --color-on-accent: #ffffff;
-  --color-danger: #ff4d5e;
+  --color-background: #f6f8f8;
+  --color-surface: #ffffff;
+  --color-border: #e1e7e7;
+  --color-text: #142221;
+  --color-muted: #5b6b6a;
+  --color-brand: #1f9e9a;
+  --color-brand-soft: #e0f4f3;
+  --color-on-brand-soft: #0d5754;
+  --color-button: #167f7b;
+  --color-on-button: #ffffff;
+  --color-danger: #c2343f;
+  --color-status-want: #fff0d6;
+  --color-on-status-want: #8a5a00;
+  --color-status-learning: #e0f4f3;
+  --color-on-status-learning: #0d5754;
+  --color-status-learned: #e6eaf7;
+  --color-on-status-learned: #33408a;
+  --color-status-shelved: #e9eded;
+  --color-on-status-shelved: #5b6b6a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-background: #101615;
+    --color-surface: #1a2221;
+    --color-border: #2a3433;
+    --color-text: #eaf1f0;
+    --color-muted: #9aaaa8;
+    --color-brand: #3cc4be;
+    --color-brand-soft: #133a38;
+    --color-on-brand-soft: #7ee0da;
+    --color-button: #3cc4be;
+    --color-on-button: #08302e;
+    --color-danger: #ff7a85;
+    --color-status-want: #3a2e12;
+    --color-on-status-want: #f5c46a;
+    --color-status-learning: #133a38;
+    --color-on-status-learning: #7ee0da;
+    --color-status-learned: #222a45;
+    --color-on-status-learned: #a9b4f0;
+    --color-status-shelved: #242d2c;
+    --color-on-status-shelved: #9aaaa8;
+  }
 }

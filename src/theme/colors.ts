@@ -1,14 +1,49 @@
-// Placeholder dark palette. Change values here and in tokens.css (Tailwind reads
-// the CSS; this file serves non-CSS consumers like the PWA manifest), not in components.
+// MusicStand palette for non-CSS consumers (PWA manifest, theme-color).
+// Tailwind reads tokens.css; change values in both files, not in components.
 export const colors = {
-  background: '#0B0B0F',
-  surface: '#16161D',
-  border: '#26262F',
-  text: '#F5F5F7',
-  muted: '#8E8E9A',
-  accent: '#FF5A36',
-  'on-accent': '#FFFFFF',
-  danger: '#FF4D5E',
+  light: {
+    background: '#F6F8F8',
+    surface: '#FFFFFF',
+    border: '#E1E7E7',
+    text: '#142221',
+    muted: '#5B6B6A',
+    brand: '#1F9E9A',
+    'brand-soft': '#E0F4F3',
+    'on-brand-soft': '#0D5754',
+    button: '#167F7B',
+    'on-button': '#FFFFFF',
+    danger: '#C2343F',
+    'status-want': '#FFF0D6',
+    'on-status-want': '#8A5A00',
+    'status-learning': '#E0F4F3',
+    'on-status-learning': '#0D5754',
+    'status-learned': '#E6EAF7',
+    'on-status-learned': '#33408A',
+    'status-shelved': '#E9EDED',
+    'on-status-shelved': '#5B6B6A',
+  },
+  dark: {
+    background: '#101615',
+    surface: '#1A2221',
+    border: '#2A3433',
+    text: '#EAF1F0',
+    muted: '#9AAAA8',
+    brand: '#3CC4BE',
+    'brand-soft': '#133A38',
+    'on-brand-soft': '#7EE0DA',
+    button: '#3CC4BE',
+    'on-button': '#08302E',
+    danger: '#FF7A85',
+    'status-want': '#3A2E12',
+    'on-status-want': '#F5C46A',
+    'status-learning': '#133A38',
+    'on-status-learning': '#7EE0DA',
+    'status-learned': '#222A45',
+    'on-status-learned': '#A9B4F0',
+    'status-shelved': '#242D2C',
+    'on-status-shelved': '#9AAAA8',
+  },
 } as const;
 
-export type ColorToken = keyof typeof colors;
+export type ColorMode = keyof typeof colors;
+export type ColorToken = keyof (typeof colors)['light'];

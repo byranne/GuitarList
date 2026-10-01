@@ -18,8 +18,9 @@ export function SignInPage() {
     <Screen>
       <div className="mx-auto flex w-full max-w-sm flex-1 flex-col justify-center pb-16">
         <div className="mb-10 flex flex-col items-center gap-2">
+          <img src="/icon-192.png" alt="" className="mb-2 size-20 rounded-3xl" />
           <h1 className="text-4xl font-extrabold text-text">
-            MAL<span className="text-accent">guitar</span>
+            Music<span className="text-brand">Stand</span>
           </h1>
           <p className="text-base text-muted">Track every song you learn.</p>
         </div>
