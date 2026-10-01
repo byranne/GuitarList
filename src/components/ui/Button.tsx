@@ -24,8 +24,8 @@ export function Button({
       disabled={isDisabled}
       aria-busy={loading}
       className={[
-        'flex h-12 w-full items-center justify-center rounded-full px-6 text-base transition-opacity active:opacity-80',
-        isPrimary ? 'bg-accent font-semibold text-on-accent' : 'bg-transparent font-medium text-muted',
+        'flex h-12 w-full items-center justify-center rounded-xl px-6 text-base transition-opacity active:opacity-80',
+        isPrimary ? 'bg-button font-semibold text-on-button' : 'bg-transparent font-medium text-muted',
         isDisabled ? 'opacity-50' : '',
       ].join(' ')}
       {...buttonProps}
