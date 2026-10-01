@@ -15,20 +15,22 @@
 .env
 .env.*
 !.env.example
+*.local
+*.pem
+*.key
 
-# Claude Code local settings
+# Claude Code local settings + worktrees
 .claude/settings.local.json
+.claude/worktrees/
 
-# Python
+# Graphify: generated knowledge graph (rebuild with `graphify update .`)
+graphify-out/
+
+# Python (graphify tooling)
 __pycache__/
 *.py[cod]
 .venv/
 venv/
-.pytest_cache/
-.mypy_cache/
-.ruff_cache/
-*.egg-info/
-.ipynb_checkpoints/
 
 # Node
 node_modules/
@@ -36,11 +38,22 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-
-# Build output
-dist/
-build/
 *.log
 
-# Graphify cache (graph outputs stay tracked)
-graphify-out/cache/
+# Vite / build output
+dist/
+dist-ssr/
+dev-dist/
+*.tsbuildinfo
+.vite/
+
+# Vitest
+coverage/
+
+# Cloudflare Pages / Wrangler
+.wrangler/
+
+# Supabase CLI local state (linked project ref, pooler URL, versions)
+supabase/.temp/
+supabase/.branches/
+supabase/.env

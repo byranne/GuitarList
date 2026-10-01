@@ -1,0 +1,20 @@
+project_id = "malguitar"
+
+[db]
+major_version = 17
+
+[auth]
+site_url = "http://localhost:8081"
+minimum_password_length = 8
+
+[auth.email]
+enable_signup = true
+# Users get in right away; email verification is optional and done later from Profile.
+enable_confirmations = false
+otp_length = 6
+otp_expiry = 3600
+
+# signInWithOtp for an existing user sends this template; it must show the code.
+[auth.email.template.magic_link]
+subject = "Your MALguitar verification code"
+content_path = "./supabase/templates/verify-code.html"

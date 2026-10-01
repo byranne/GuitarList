@@ -1,0 +1,202 @@
+// Hand-written to match supabase/migrations/ (0001_init, 0002_email_verification).
+// Once a project is linked, regenerate with: supabase gen types typescript --linked > src/lib/database.types.ts
+
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+
+export type SongSource = 'musicbrainz' | 'custom';
+export type SongStatus = 'want_to_learn' | 'learning' | 'learned' | 'shelved';
+export type PracticeFocus = 'riff' | 'solo' | 'rhythm' | 'full_song';
+
+export type Database = {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string;
+          username: string | null;
+          display_name: string | null;
+          avatar_url: string | null;
+          email_verified_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id: string;
+          username?: string | null;
+          display_name?: string | null;
+          avatar_url?: string | null;
+          email_verified_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          username?: string | null;
+          display_name?: string | null;
+          avatar_url?: string | null;
+          email_verified_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      songs: {
+        Row: {
+          id: string;
+          mbid: string | null;
+          title: string;
+          artist: string;
+          album: string | null;
+          cover_url: string | null;
+          duration_ms: number | null;
+          source: SongSource;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          mbid?: string | null;
+          title: string;
+          artist: string;
+          album?: string | null;
+          cover_url?: string | null;
+          duration_ms?: number | null;
+          source: SongSource;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          mbid?: string | null;
+          title?: string;
+          artist?: string;
+          album?: string | null;
+          cover_url?: string | null;
+          duration_ms?: number | null;
+          source?: SongSource;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      user_songs: {
+        Row: {
+          id: string;
+          user_id: string;
+          song_id: string;
+          status: SongStatus;
+          progress: number;
+          difficulty: number | null;
+          tuning: string | null;
+          capo: number | null;
+          notes: string | null;
+          tab_url: string | null;
+          video_url: string | null;
+          started_at: string | null;
+          learned_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          song_id: string;
+          status?: SongStatus;
+          progress?: number;
+          difficulty?: number | null;
+          tuning?: string | null;
+          capo?: number | null;
+          notes?: string | null;
+          tab_url?: string | null;
+          video_url?: string | null;
+          started_at?: string | null;
+          learned_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          song_id?: string;
+          status?: SongStatus;
+          progress?: number;
+          difficulty?: number | null;
+          tuning?: string | null;
+          capo?: number | null;
+          notes?: string | null;
+          tab_url?: string | null;
+          video_url?: string | null;
+          started_at?: string | null;
+          learned_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'user_songs_song_id_fkey';
+            columns: ['song_id'];
+            isOneToOne: false;
+            referencedRelation: 'songs';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+      practice_sessions: {
+        Row: {
+          id: string;
+          user_id: string;
+          user_song_id: string;
+          practiced_at: string;
+          duration_min: number;
+          focus: PracticeFocus | null;
+          notes: string | null;
+          progress_after: number | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          user_id?: string;
+          user_song_id: string;
+          practiced_at?: string;
+          duration_min: number;
+          focus?: PracticeFocus | null;
+          notes?: string | null;
+          progress_after?: number | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          user_id?: string;
+          user_song_id?: string;
+          practiced_at?: string;
+          duration_min?: number;
+          focus?: PracticeFocus | null;
+          notes?: string | null;
+          progress_after?: number | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: 'practice_sessions_user_song_id_fkey';
+            columns: ['user_song_id'];
+            isOneToOne: false;
+            referencedRelation: 'user_songs';
+            referencedColumns: ['id'];
+          },
+        ];
+      };
+    };
+    Views: { [_ in never]: never };
+    Functions: {
+      mark_email_verified: { Args: Record<PropertyKey, never>; Returns: string };
+    };
+    Enums: {
+      song_source: SongSource;
+      song_status: SongStatus;
+      practice_focus: PracticeFocus;
+    };
+    CompositeTypes: { [_ in never]: never };
+  };
+};
+
+type PublicTables = Database['public']['Tables'];
+export type Tables<T extends keyof PublicTables> = PublicTables[T]['Row'];
+export type TablesInsert<T extends keyof PublicTables> = PublicTables[T]['Insert'];
+export type TablesUpdate<T extends keyof PublicTables> = PublicTables[T]['Update'];

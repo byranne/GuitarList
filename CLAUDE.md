@@ -48,7 +48,7 @@ supabase/
 
 ## Data model
 - `profiles`: `id` → `auth.users`, unique `username`, `display_name`, `avatar_url`
-- `songs`: shared catalog cache. `mbid` is unique and nullable. `source` is `musicbrainz` | `custom`. `created_by` is set for custom songs.
+- `songs`: MusicBrainz catalog cache plus users' private custom songs. `source` is `musicbrainz` | `custom`. MusicBrainz rows have a unique `mbid` and no `created_by`. Custom rows have `created_by` and no `mbid`, and they cascade-delete with the user.
 - `user_songs`: one row per user per song (`unique(user_id, song_id)`). Columns: `status` enum (`want_to_learn`, `learning`, `learned`, `shelved`), `progress` 0–100, `difficulty` 1–5, `tuning`, `capo`, `notes`, `tab_url`, `video_url`, `started_at`, `learned_at`, `updated_at`.
 - `practice_sessions`: `user_song_id`, `practiced_at`, `duration_min`, `focus` (riff/solo/rhythm/full song), `notes`, `progress_after`.
 - `learned_at` is set automatically when status becomes `learned`.
@@ -57,7 +57,8 @@ supabase/
 ## Security (RLS is the security boundary)
 - Every table has RLS enabled. No exceptions.
 - `user_songs`, `practice_sessions`: owner-only CRUD (`user_id = auth.uid()`).
-- `songs`: authenticated read. Inserts only via the edge function (service role) or as `source='custom'` with `created_by = auth.uid()`.
+- `songs`: `musicbrainz` rows are readable by every authenticated user and written only by the edge function (service role). `custom` rows are readable, insertable, updatable, and deletable only by their creator (`created_by = auth.uid()`).
+- `user_songs` can only reference songs the user can see, so nobody can add another user's custom song.
 - `profiles`: public read, owner write.
 - The service-role key is used only inside edge functions. It never goes in the app bundle or in `EXPO_PUBLIC_*` env vars.
 
@@ -85,12 +86,7 @@ CI (GitHub Actions) runs typecheck + lint on every push. A daily cron pings Supa
 ## Out of scope for MVP (don't build unless asked)
 Social/follows/feed, Beli-style pairwise ranking, App Store/EAS builds, push notifications, Apple/Google sign-in. Stretch goals only if time allows: a 1–10 score and a public read-only profile.
 
-## Test-driven development (required)
-Write the tests **before** the implementation. For every feature or fix:
-1. Write the failing test(s) that encode the requirement or constraint.
-2. Run them and confirm they fail for the expected reason.
-3. Write the minimum implementation to make them pass.
-4. Refactor with the tests green.
+
 
 Don't write implementation code for anything that has no failing test yet. Don't weaken or delete a test to make it pass. If a test's premise is wrong, say so and ask first.
 
@@ -98,7 +94,7 @@ Don't write implementation code for anything that has no failing test yet. Don't
 | Constraint | Test | Location / tool |
 |---|---|---|
 | RLS: owner-only `user_songs` / `practice_sessions` | User B can't select/insert/update/delete user A's rows | `supabase/tests/*.sql`, pgTAP via `supabase test db` |
-| RLS: `songs` insert rules | Client can insert only `source='custom'` with `created_by = auth.uid()`; `musicbrainz` rows are service-role only | pgTAP |
+| RLS: `songs` rules | Client can insert only `source='custom'` with `created_by = auth.uid()`; `musicbrainz` rows are service-role only; user B can't see or library-add user A's custom song | pgTAP |
 | RLS: `profiles` | Anyone can read; only the owner can write | pgTAP |
 | Schema integrity | `unique(user_id, song_id)`; `progress` 0–100; `difficulty` 1–5; `status` enum; `mbid` unique | pgTAP |
 | `learned_at` auto-set | Changing status to `learned` sets `learned_at` | pgTAP (trigger) + Jest (status transition logic) |
